@@ -81,7 +81,7 @@
             const isEmbedded = window.self !== window.top;
 
             window.gui = new dat.GUI();
-            
+
 
             // ---- Create a GlobeView ----
 
@@ -179,6 +179,7 @@
                 window.layer = new OGC3DTilesLayer('3DTiles', {
                     source,
                     pntsSizeMode: PNTS_SIZE_MODE.ATTENUATED,
+                    sseThreshold: 2,
                 });
 
                 // Add an event for picking the 3D Tiles layer and displaying
