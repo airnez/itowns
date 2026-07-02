@@ -78,6 +78,8 @@ class SimpleSky implements ISkyStrategy {
             this.update();
         } else {
             this.view.scene.fog = null;
+            const renderer = this.view.mainLoop.gfxEngine.renderer;
+            renderer.setClearColor(this.spaceColor, renderer.getClearAlpha());
         }
     }
 

@@ -4,6 +4,7 @@ import SimpleSky, { SimpleSkyParameters } from 'Core/Prefab/Globe/SimpleSky';
 import ISkyStrategy from 'Core/Prefab/Globe/ISkyStrategy';
 import GlobeView from 'Core/Prefab/GlobeView';
 import { AtmosphereParameters } from '@takram/three-atmosphere';
+import * as THREE from 'three';
 
 class SkyController {
     private readonly _view: GlobeView;
@@ -14,6 +15,7 @@ class SkyController {
     private _realisticLighting = false;
     private _realisticParams?: RealisticSkyParameters | undefined;
     private _simpleParams?: SimpleSkyParameters | undefined;
+    private _ambientLight: THREE.AmbientLight;
 
     constructor(view: GlobeView,
         options: {
@@ -24,6 +26,8 @@ class SkyController {
         this._view = view;
         this._realisticParams = options.realisticSky;
         this._simpleParams = options.simpleSky;
+        this._ambientLight = new THREE.AmbientLight(0xffffff, 3);
+        this._view.scene.add(this._ambientLight);
         this.realisticLighting = options.realisticLighting ?? false;
     }
 
@@ -33,21 +37,17 @@ class SkyController {
         if (this._activeSky && this._realisticLighting === value) { return; }
         this._realisticLighting = value;
 
-        // Disable the previous strategy
-        if (this._activeSky) {
-            this._activeSky.enabled = false;
-        }
+        const previousSkyEnabled = (this._activeSky === undefined || this._activeSky.enabled);
 
-        if (value) {
-            this.sunLightLayer.visible = true;
-            this._view.notifyChange(this._view.camera3D);
-        } else if (this._sunLightLayer) {
-            this._sunLightLayer.visible = false;
+        // Disable the previous strategy
+        if (this._activeSky !== undefined) {
+            this._activeSky.enabled = false;
         }
 
         // Activate the new strategy
         this._activeSky = value ? this.realisticSky : this.simpleSky;
-        this._activeSky.enabled = true;
+        this._activeSky.enabled = previousSkyEnabled;
+        this.setSunlightVisible(previousSkyEnabled && value);
 
         this._view.notifyChange(this._view.camera3D);
     }
@@ -78,9 +78,7 @@ class SkyController {
         if (this._activeSky) {
             this._activeSky.enabled = value;
         }
-        if (this._realisticLighting && this._sunLightLayer) {
-            this._sunLightLayer.visible = value;
-        }
+        this.setSunlightVisible(this._realisticLighting && value);
     }
 
     get enabled() {
@@ -116,6 +114,15 @@ class SkyController {
             });
         }
         return this._sunLightLayer;
+    }
+
+    private setSunlightVisible(value: boolean) {
+        this._ambientLight.visible = !value;
+        if (value) {
+            this.sunLightLayer.visible = true;
+        } else if (this._sunLightLayer) {
+            this.sunLightLayer.visible = false;
+        }
     }
 }
 

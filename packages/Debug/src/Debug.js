@@ -211,13 +211,14 @@ function Debug(view, datDebugTool, chartDivContainer) {
             r.setClearColor(backgroundChartDiv);
             r.clear();
 
-            if (view.skyController) {
+            const skyEnabled = view.skyController && view.skyController.enabled;
+            if (skyEnabled) {
                 view.skyController.enabled = false;
             }
 
             r.render(view.scene, debugCamera);
 
-            if (view.skyController) {
+            if (skyEnabled) {
                 view.skyController.enabled = true;
             }
 
