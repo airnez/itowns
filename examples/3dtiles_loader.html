@@ -96,7 +96,6 @@
 
             // Create a GlobeView
             const view = new GlobeView(viewerDiv, placement, {
-                realisticLighting: true,
                 shadows: true,
                 controls: {
                     minDistance: 100,
@@ -220,6 +219,10 @@
                 date.setHours(hours, minutes);
                 view.notifyChange(view.camera3D);
             }).name('hour (24h)');
+
+            gui.add(view, 'realisticLighting').onChange((v) => {
+                view.realisticLighting = v;
+            });
 
             function loadLyon() {
                 setUrl("https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/refs/heads/master/3DTiles/lyon1-4978/tileset.json");
