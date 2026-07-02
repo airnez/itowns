@@ -143,12 +143,7 @@
             });
 
             // ---------- DEBUG TOOLS : ----------
-
-            // Toggle atmospheric lighting on/off.
-            const cRL = debugMenu.addGUI('RealisticLighting', !view.isDebugMode, function (v) {
-                view.realisticLighting = v;
-            });
-
+            debug.createRealisticLightingDebugUI(debugMenu.gui, view);
             debug.createTileDebugUI(debugMenu.gui, view);
 
             window.view = view;
