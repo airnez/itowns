@@ -11,9 +11,7 @@ import {
 import {
     EffectPass,
     RenderPass,
-    ToneMappingEffect,
     FXAAEffect,
-    ToneMappingMode,
     EffectMaterial,
     EffectComposer,
 } from 'postprocessing';
@@ -56,6 +54,10 @@ class RealisticSky implements ISkyStrategy {
         // SkyMaterial disables projection.
         // Provide a plane that covers clip space.
         const skyMaterial = new SkyMaterial();
+        skyMaterial.fragmentShader = skyMaterial.fragmentShader.replace(
+            'outputColor.a = 1.0;',
+            'outputColor.rgb *= 6.;\noutputColor.a = 1.0;',
+        );
         this.sky = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), skyMaterial);
         this.sky.frustumCulled = false;
         this.sky.visible = false;
@@ -69,6 +71,13 @@ class RealisticSky implements ISkyStrategy {
         scene.add(this.skyLight);
 
         this.aerialPerspective = new AerialPerspectiveEffect(camera);
+        this.aerialPerspective.setSize(window.innerWidth, window.innerHeight);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const ap = this.aerialPerspective as any;
+        ap.fragmentShader = (ap.fragmentShader as string).replace(
+            'radiance = radiance + inscatter',
+            'radiance = radiance + 6. * inscatter',
+        );
 
         const rendererSize = new THREE.Vector2();
         view.mainLoop.gfxEngine.renderer.getSize(rendererSize);
@@ -78,7 +87,6 @@ class RealisticSky implements ISkyStrategy {
         this.effectPass = new EffectPass(
             camera,
             this.aerialPerspective,
-            new ToneMappingEffect({ mode: ToneMappingMode.AGX }),
         );
         this.FXAAPass = new EffectPass(camera, new FXAAEffect());
 
@@ -121,7 +129,7 @@ class RealisticSky implements ISkyStrategy {
 
         // attenuate aerial perspective when far away.
         // value determined experimentally
-        this.aerialPerspective.blendMode.opacity.value = Math.max(0.3 - 2e-7 * camera.near, 0.05);
+        this.aerialPerspective.blendMode.opacity.value = Math.max(1 - 2e-5 * camera.near, 0);
 
         // The changes to the camera's near/far must be manually updated
         // to the uniforms used in post-processing effects
